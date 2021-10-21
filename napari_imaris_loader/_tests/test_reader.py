@@ -12,7 +12,7 @@ def test_reader(tmp_path):
     #np.save(my_test_file, original_data)
 
     # Test whether we get a callable reader function
-    reader = napari_get_reader('/fake/test/path/string')
+    reader = napari_get_reader('/path/to/a/fake.ims')
     assert callable(reader)
 
     ## make sure we're delivering the right format
