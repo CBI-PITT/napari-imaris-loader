@@ -15,7 +15,7 @@ more about what napari is expecting for during different stages of rendering.
 Future implemetation of caching in RAM and persistantly on disk is planned - currently disabled
 """
 
-import os, sys, glob, itertools, functools, pickle, shutil, random, hashlib,
+import os, sys, glob, itertools, functools, pickle, shutil, random, hashlib
 import numpy as np
 import h5py
 from napari_plugin_engine import napari_hook_implementation
