@@ -60,7 +60,7 @@ You can install `napari-imaris-loader` via [pip]:
 ## Contributing
 
 Contributions are very welcome. Tests can be run with [tox], please ensure
-the coverage at least stays the same before you submit a pull request.  Test only verifies that the loader is callable.  I plan to implement testing over a real '.ims' file in the future.
+the coverage at least stays the same before you submit a pull request.
 
 ## License
 
