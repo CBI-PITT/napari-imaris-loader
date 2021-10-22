@@ -6,19 +6,28 @@ Created on Tue Apr 27 20:40:39 2021
 
 Napari plugin for reading imaris files as a multiresolution series.
     
-NOTE:  Currently File/Preferences/Render Images Asynchronously must be turned on for this plugin to work
+NOTE:  Currently "File/Preferences/Render Images Asynchronously" must be turned on for this plugin to work
 
-*** Issues remain with indexing and the shape of returned arrays.  Probably a n issue
-with the way I am implementing slicing of IMS file.  Need to understand
-more about what napari is expecting for during different stages of rendering. 
+*** Issues remain with indexing and the shape of returned arrays.  
+ 1) It is unclear if there is an issue with how I am impolementing slicing
+ 2) Different expections from napari on the state of the data that is returned between the Image and Chunk_loader methods
 
-Future implemetation of caching in RAM and persistantly on disk is planned - currently disabled
+** It appears that napari is only requesting 2D (YX) chunks from the loader during 2D rendering 
+which limits the utility of the async chunk_loader.  
+
+*Future implemetation of caching in RAM and persistantly on disk is planned - currently disabled
+RAM Cache may be redundant to napari cache unless we can implement 3D chunk caching
+Disk cache may allow for loaded chunks to be stored to SSD for rapid future retrieval
+with options to maintain this cache persistantly accross sessions.
 """
 
 import os, sys, glob, itertools, functools, pickle, shutil, random #, hashlib
 import numpy as np
 import h5py
-from napari_plugin_engine import napari_hook_implementation
+try:
+    from napari_plugin_engine import napari_hook_implementation
+except Exception:
+    pass
 
 
 # from functools import lru_cache
@@ -109,19 +118,19 @@ class ims:
             
             ##  Should define a method to change the ResolutionLevelLock after class in initialized
                     
-               
+        # print(self.metaData)
                 
     def __getitem__(self, key):
-        print(key)
+        # print(key)
         
         '''
         All ims class objects are represented as shape (TCZYX)
         An integer only slice will return the entire timepoint (T) data as a numpy array
         
-        Any other variation on slice will be coerced to 5 dimentions and 
+        Any other variation on slice will be coerced to 5 dimensions and 
         extract that array
         
-        If a 6th dimentions is present in the slice, it is assumed to be resolutionLevel
+        If a 6th dimentions is present in the slice, dim[0] is assumed to be the resolutionLevel
         this will be used when choosing which array to extract.  Otherwise ResolutionLevelLock
         will be obeyed.  If ResolutionLevelLock is == None - default resolution is 0 (full-res)
         and a slice of 5 or less dimentions will extract information from resolutionLevel 0.
@@ -129,7 +138,7 @@ class ims:
         ResolutionLevelLock is used when building a multiresolution series to load into napari
         '''
         
-        
+        origionalKey = key
         res = self.ResolutionLevelLock
         
         if isinstance(key,slice) == False and isinstance(key,int) == False and len(key) == 6:
@@ -176,7 +185,8 @@ class ims:
         #         y = sliceFixer(self,key[3],'y',res=res), 
         #         x = sliceFixer(self,key[4],'x',res=res)
         #         )
-        return getSlice(
+        
+        sliceReturned = getSlice(
                 self, 
                 r = res if res is not None else 0,
                 t = sliceFixer(self,key[0],'t',res=res),
@@ -185,6 +195,8 @@ class ims:
                 y = sliceFixer(self,key[3],'y',res=res), 
                 x = sliceFixer(self,key[4],'x',res=res)
                 )
+        print('Image Slices Requested: {} / Item shape returned: {} \n'.format(origionalKey,sliceReturned.shape))
+        return sliceReturned
     
     
 
@@ -409,6 +421,7 @@ def getSlice(imsClass,r,t,c,z,y,x):
     for a specific RTC.  
     '''
     
+    incomingSlices = (r,t,c,z,y,x)
     tSize = list(range(imsClass.TimePoints)[t])
     cSize = list(range(imsClass.Channels)[c])
     zSize = len(range(imsClass.metaData[(r,0,0,'shape')][-3])[z])
@@ -416,7 +429,7 @@ def getSlice(imsClass,r,t,c,z,y,x):
     xSize = len(range(imsClass.metaData[(r,0,0,'shape')][-1])[x])
     
     outputArray = np.zeros((len(tSize),len(cSize),zSize,ySize,xSize))
-    # print(outputArray.shape)
+    chunkRequested = outputArray.shape
     
     with h5py.File(imsClass.filePathComplete, 'r') as hf:
         for idxt, t in enumerate(tSize):
@@ -424,7 +437,7 @@ def getSlice(imsClass,r,t,c,z,y,x):
                 # print(t)
                 # print(c)
                 dSetString = locationGenerator(r,t,c,data='data')
-                outputArray[idxt,idxc] = hf[dSetString][z,y,x]
+                outputArray[idxt,idxc,:,:,:] = hf[dSetString][z,y,x]
     
     
     ''' Some issues here with the output of these arrays.  Napari sometimes expects
@@ -442,103 +455,34 @@ def getSlice(imsClass,r,t,c,z,y,x):
     '''
     try:
         if os.environ["NAPARI_ASYNC"] == '1':
-            return np.squeeze(outputArray)
+            while outputArray.shape[0] == 1 and len(outputArray.shape) > 1:
+                outputArray = outputArray[0,:]
+            sliceOutput = outputArray.shape
+            # print('Incoming Slices: {} / Slice Requested: {} / Slice Output {}'.format(incomingSlices,chunkRequested,sliceOutput))
+            return outputArray
     except KeyError:
         pass
+    
+    sliceOutput = outputArray.shape
+    # print('Incoming Slices: {} / Slice Requested: {} / Slice Output {}'.format(incomingSlices,chunkRequested,sliceOutput))
     return outputArray
 
 
+    
+"""
+path = "...\napari-env\Lib\site-packages\napari\layers\image\image.py"
+Line 619-620
+should read:
+indices[d] = slice(
+                    int(self.corner_pixels[0, d]),
+                    int(self.corner_pixels[1, d] + 1),
+                    1,
+                    )
 
-def view_napari(imsClass, preCache=False):
-    
-    import napari
-    import dask.array as da
-    from dask import delayed
-    from dask.cache import Cache
-    
-    if isinstance(imsClass,ims):
-        pass
-    elif isinstance(imsClass,str):
-        try:
-            imsClass = fi.formatPath(imsClass)
-        except Exception:
-            pass
-        
-        imsClass = ims(imsClass)
-    # r0 = ims(testIMS,ResolutionLevelLock=0,cache_location=imsClass.cache_location)
+start/stop values of the slice must be coerced to int otherwise an error
+is thrown when switching from 3D to 2D view
 
-    data = []
-    for rr in range(imsClass.ResolutionLevels):
-        data.append(ims(testIMS,ResolutionLevelLock=rr,cache_location=imsClass.cache_location))
-        
-    
-    for idx,_ in enumerate(data):
-        data[idx] = da.from_array(data[idx],chunks=data[idx].chunks, fancy=False)
-    
-    
-    if imsClass.dtype==np.dtype('uint16'):
-        contrastLimits = [0,65534]
-    elif imsClass.dtype==np.dtype('uint8'):
-        contrastLimits = [0,254]
-    elif imsClass.dtype==np.dtype('float'):
-        contrastLimits = [0,1]
-    
-    
-    ## Enable async loading of tiles
-    os.environ["NAPARI_ASYNC"] = "1"
-    # os.environ['NAPARI_OCTREE'] = "1"
-    
-    
-    
-    # cache = Cache(10e9)  # Leverage two gigabytes of memory
-    # cache.register()    # Turn cache on globally
-    
-    ## Extract Voxel Spacing
-    scale = imsClass.resolution
-    scale = [x/scale[-1] for x in scale]
-    scale = [tuple(scale)]*imsClass.Channels
-    print(scale)
-    
-    ## Display current Channel Names
-    channelNames = []
-    for cc in range(imsClass.Channels):
-        channelNames.append('Channel {}'.format(cc))
-    
-    
-    layer3D = -1
-    if isinstance(layer3D,int):
-        data = data[:layer3D]
-        
-    if preCache == True:
-        for idx,dd in enumerate(reversed(data)):
-            print('Caching resolution level {}'.format(len(data)-idx-1))
-            for ii in range(imsClass.Channels):
-                dd[0,ii].min().compute()
-            if idx == 2:
-                break
-            # imsClass.mem_size
-    
-    viewer = napari.view_image(data, channel_axis=1, multiscale=True,
-                                contrast_limits=contrastLimits,
-                                scale=scale,
-                                name=channelNames
-                                # cache=False
-                                )
-    
-    """
-    path = "...\napari-env\Lib\site-packages\napari\layers\image\image.py"
-    Line 619-620
-    should read:
-    indices[d] = slice(
-                        int(self.corner_pixels[0, d]),
-                        int(self.corner_pixels[1, d] + 1),
-                        1,
-                        )
-    
-    start/stop values of the slice must be coerced to int otherwise an error
-    is thrown when switching from 3D to 2D view
-    
-    """
+"""
     
 
 
@@ -555,9 +499,10 @@ def ims_reader(path,preCache=False):
         data.append(ims(path,ResolutionLevelLock=rr,cache_location=imsClass.cache_location))
         
     
+    chunks = True
     for idx,_ in enumerate(data):
         data[idx] = da.from_array(data[idx],
-                                  chunks=data[idx].chunks,
+                                  chunks=data[idx].chunks if chunks == True else (1,1,data[idx].shape[-3],data[idx].shape[-2],data[idx].shape[-1]),
                                   fancy=False
                                   )
     
@@ -591,10 +536,14 @@ def ims_reader(path,preCache=False):
         channelNames.append('Channel {}'.format(cc))
     
     
-    layer3D = -1
-    if isinstance(layer3D,int):
-        data = data[:layer3D]
+    ## Posibility of determinign the lowest resolution level handed to napari
+    ## important for 3D rendering resolution?
+    # layer3D = -1
+    # if isinstance(layer3D,int):
+    #     data = data[:layer3D]
         
+    ## Possibility of implementing rapid caching of some data (lower resolution levels?) prior to visualization.
+    ## done by calling a simple calculation over the whole dask array da.min()
     if preCache == True:
         for idx,dd in enumerate(reversed(data)):
             print('Caching resolution level {}'.format(len(data)-idx-1))
@@ -602,7 +551,6 @@ def ims_reader(path,preCache=False):
                 dd[0,ii].min().compute()
             if idx == 2:
                 break
-            # imsClass.mem_size
     
     meta = {
         "channel_axis": 1,
@@ -612,7 +560,7 @@ def ims_reader(path,preCache=False):
         "name": channelNames
         }
     
-    print([(data,meta)])
+    # print([(data,meta)])
     return [(data,meta)]
 
 
