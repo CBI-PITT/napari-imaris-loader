@@ -9,13 +9,13 @@ Napari plugin for reading imaris files as a multiresolution series.
 NOTE:  Currently "File/Preferences/Render Images Asynchronously" must be turned on for this plugin to work
 
 *** Issues remain with indexing and the shape of returned arrays.  
- 1) It is unclear if there is an issue with how I am impolementing slicing
- 2) Different expections from napari on the state of the data that is returned between the Image and Chunk_loader methods
+ 1) It is unclear if there is an issue with how I am impolementing slicing in the ims module
+ 2) Different expections from napari on the state of the data that is returned between the Image and Chunk_loader methods in ims module
 
 ** It appears that napari is only requesting 2D (YX) chunks from the loader during 2D rendering 
 which limits the utility of the async chunk_loader.  
 
-*Future implemetation of caching in RAM and persistantly on disk is planned - currently disabled
+*Future implemetation of caching in RAM and persistantly on disk is planned via ims module - currently disabled
 RAM Cache may be redundant to napari cache unless we can implement 3D chunk caching
 Disk cache may allow for loaded chunks to be stored to SSD for rapid future retrieval
 with options to maintain this cache persistantly accross sessions.
@@ -29,6 +29,10 @@ import dask.array as da
 # from dask.cache import Cache
 
 from napari_plugin_engine import napari_hook_implementation
+
+# import magicgui
+
+from magicgui import magicgui
 
 
 
@@ -50,7 +54,7 @@ is thrown when switching from 3D to 2D view
     
 
 
-def ims_reader(path,preCache=False):
+def ims_reader(path,resLevel='max', preCache=False):
     
     imsClass = ims(path)
    
@@ -121,6 +125,17 @@ def ims_reader(path,preCache=False):
         "name": channelNames
         }
     
+    
+    
+    
+    @magicgui
+    def add(Resolution_3D: int = len(data)-1 if resLevel == 'max' else resLevel, Active = True):
+        ims_reader(path,resLevel=Resolution_3D,preCache=False)
+    
+    add.show()
+    print(add)
+
+    data = data if resLevel=='max' else data[:resLevel]
     # print([(data,meta)])
     return [(data,meta)]
 
