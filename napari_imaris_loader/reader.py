@@ -57,22 +57,10 @@ is thrown when switching from 3D to 2D view
 
 def ims_reader(path,resLevel='max', preCache=False):
     
+    # path = r"Z:\testData\bitplaneConverter.ims"  ## Dataset for testing
+    
     imsClass = ims(path)
    
-    data = []
-    for rr in range(imsClass.ResolutionLevels):
-        print('Loading resolution level {}'.format(rr))
-        data.append(ims(path,ResolutionLevelLock=rr,cache_location=imsClass.cache_location))
-        
-    
-    chunks = True
-    for idx,_ in enumerate(data):
-        data[idx] = da.from_array(data[idx],
-                                  chunks=data[idx].chunks if chunks == True else (1,1,data[idx].shape[-3],data[idx].shape[-2],data[idx].shape[-1]),
-                                  fancy=False
-                                  )
-    
-    
     if imsClass.dtype==np.dtype('uint16'):
         contrastLimits = [0,65534]
     elif imsClass.dtype==np.dtype('uint8'):
@@ -108,26 +96,68 @@ def ims_reader(path,resLevel='max', preCache=False):
     # if isinstance(layer3D,int):
     #     data = data[:layer3D]
         
-    ## Possibility of implementing rapid caching of some data (lower resolution levels?) prior to visualization.
-    ## done by calling a simple calculation over the whole dask array da.min()
-    if preCache == True:
-        for idx,dd in enumerate(reversed(data)):
-            print('Caching resolution level {}'.format(len(data)-idx-1))
-            for ii in range(imsClass.Channels):
-                dd[0,ii].min().compute()
-            if idx == 2:
-                break
     
+    data = []
+    for rr in range(imsClass.ResolutionLevels):
+        print('Loading resolution level {}'.format(rr))
+        data.append(ims(path,ResolutionLevelLock=rr,cache_location=imsClass.cache_location))
+        
+    
+    chunks = True
+    for idx,_ in enumerate(data):
+        data[idx] = da.from_array(data[idx],
+                                  chunks=data[idx].chunks if chunks == True else (1,1,data[idx].shape[-3],data[idx].shape[-2],data[idx].shape[-1]),
+                                  fancy=False
+                                  )
+    
+    
+    # Base metadata that apply to all senarios
     meta = {
-        "channel_axis": 1,
         "scale": scale,
-        "multiscale": True,
         "contrast_limits": contrastLimits,
         "name": channelNames
         }
+    
+    # Reslice to remove dangling single dimensions
+    inwardSlice = 0
+    for ii in range(len(imsClass.shape)):
+        if imsClass.shape[ii] == 1:
+            inwardSlice += 1
+    
+    if inwardSlice == 0:
+        for idx,_ in enumerate(data):
+            meta['channel_axis'] = 1
+    elif inwardSlice == 1:
+        for idx,_ in enumerate(data):
+            data[idx] = data[idx][0]
+            meta['channel_axis'] = 0
+    elif inwardSlice == 2:
+        for idx,_ in enumerate(data):
+            data[idx] = data[idx][0,0]
+    elif inwardSlice == 3:
+        for idx,_ in enumerate(data):
+            data[idx] = data[idx][0,0,0]
+    elif inwardSlice == 4:
+        for idx,_ in enumerate(data):
+            data[idx] = data[idx][0,0,0,0]
+    
+    ## Possibility of implementing rapid caching of some data (lower resolution levels?) prior to visualization.
+    ## done by calling a simple calculation over the whole dask array da.min()?
+    # if preCache == True:
+    #     for idx,dd in enumerate(reversed(data)):
+    #         print('Caching resolution level {}'.format(len(data)-idx-1))
+    #         for ii in range(imsClass.Channels):
+    #             dd[0,ii].min().compute()
+    #         if idx == 2:
+    #             break
 
+    # Option to cut off lower resolutions to improve 3D rendering
+    # May provide a widgit that can impletment this after the dataset is loaded
     data = data if resLevel=='max' else data[:resLevel]
-    # print([(data,meta)])
+    
+    # Set multiscale based on whether multiple resolutions are present
+    meta["multiscale"] = True if len(data) > 1 else False
+
     return [(data,meta)]
 
 

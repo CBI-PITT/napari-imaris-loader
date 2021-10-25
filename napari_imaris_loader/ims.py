@@ -399,7 +399,7 @@ def getSlice(imsClass,r,t,c,z,y,x):
     for a specific RTC.  
     '''
     
-    incomingSlices = (r,t,c,z,y,x)
+    # incomingSlices = (r,t,c,z,y,x)
     tSize = list(range(imsClass.TimePoints)[t])
     cSize = list(range(imsClass.Channels)[c])
     zSize = len(range(imsClass.metaData[(r,0,0,'shape')][-3])[z])
@@ -407,7 +407,7 @@ def getSlice(imsClass,r,t,c,z,y,x):
     xSize = len(range(imsClass.metaData[(r,0,0,'shape')][-1])[x])
     
     outputArray = np.zeros((len(tSize),len(cSize),zSize,ySize,xSize))
-    chunkRequested = outputArray.shape
+    # chunkRequested = outputArray.shape
     
     with h5py.File(imsClass.filePathComplete, 'r') as hf:
         for idxt, t in enumerate(tSize):
@@ -432,15 +432,17 @@ def getSlice(imsClass,r,t,c,z,y,x):
     Currently File/Preferences/Render Images Asynchronously must be turned on for this plugin to work
     '''
     try:
+        # if os.environ["NAPARI_ASYNC"] == '1':
+        #     while outputArray.shape[0] == 1 and len(outputArray.shape) > 1:
+        #         outputArray = outputArray[0,:]
+        #     # sliceOutput = outputArray.shape
+        #     # print('Incoming Slices: {} / Slice Requested: {} / Slice Output {}'.format(incomingSlices,chunkRequested,sliceOutput))
+        #     return outputArray
         if os.environ["NAPARI_ASYNC"] == '1':
-            while outputArray.shape[0] == 1 and len(outputArray.shape) > 1:
-                outputArray = outputArray[0,:]
-            sliceOutput = outputArray.shape
-            # print('Incoming Slices: {} / Slice Requested: {} / Slice Output {}'.format(incomingSlices,chunkRequested,sliceOutput))
-            return outputArray
+            return np.squeeze(outputArray)
     except KeyError:
         pass
     
-    sliceOutput = outputArray.shape
+    # sliceOutput = outputArray.shape
     # print('Incoming Slices: {} / Slice Requested: {} / Slice Output {}'.format(incomingSlices,chunkRequested,sliceOutput))
     return outputArray
