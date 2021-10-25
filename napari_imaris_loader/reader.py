@@ -52,12 +52,8 @@ is thrown when switching from 3D to 2D view
 
 def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
     
-<<<<<<< HEAD
-    path = r"Z:\testData\bitplaneConverter.ims"  ## Dataset for testing
-=======
     # path = r"Z:\testData\bitplaneConverter.ims"  ## Dataset for testing
-    print('I AM IN THE READER')
->>>>>>> widget_change_3D_res
+    #print('I AM IN THE READER')
     
     imsClass = ims(path)
    
