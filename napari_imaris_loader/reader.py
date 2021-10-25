@@ -29,6 +29,7 @@ import dask.array as da
 # from dask.cache import Cache
 
 from napari_plugin_engine import napari_hook_implementation
+import napari
 
 # import magicgui
 
@@ -124,16 +125,6 @@ def ims_reader(path,resLevel='max', preCache=False):
         "contrast_limits": contrastLimits,
         "name": channelNames
         }
-    
-    
-    
-    
-    @magicgui
-    def add(Resolution_3D: int = len(data)-1 if resLevel == 'max' else resLevel, Active = True):
-        ims_reader(path,resLevel=Resolution_3D,preCache=False)
-    
-    add.show()
-    print(add)
 
     data = data if resLevel=='max' else data[:resLevel]
     # print([(data,meta)])
