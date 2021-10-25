@@ -25,6 +25,7 @@ def res_change(
     for idx in viewer.layers:
         tupleOut = ims_reader(
             viewer.layers[str(idx)].metadata['fileName'],
+            colorsIndependant=True,
             resLevel=resolution_level
             )
         break
@@ -33,7 +34,7 @@ def res_change(
     # for dd in tupleOut[0]:
         
     
-    return tupleOut[0]
+    return tupleOut
     
     # for idx in viewer.layers:
     #     print(viewer.layers[str(idx)].metadata)
