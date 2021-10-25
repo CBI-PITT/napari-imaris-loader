@@ -13,23 +13,59 @@ from .reader import ims_reader
 import dask.array as da
 
 
+
 @magic_factory(auto_call=False,call_button="update",
                 resolution_level={'min': 0,'max': 9}
                 )
 def res_change(
     viewer: napari.Viewer,
     resolution_level: int
-):
+) -> 'napari.types.LayerDataTuple':
     
     for idx in viewer.layers:
-        print(viewer.layers[str(idx)].metadata)
-        print(viewer.layers[str(idx)].metadata['fileName'])
+        tupleOut = ims_reader(
+            viewer.layers[str(idx)].metadata['fileName'],
+            resLevel=resolution_level
+            )
+        break
+    
+    # tupleOut = tupleOut[0]
+    # for dd in tupleOut[0]:
+        
+    
+    return tupleOut[0]
+    
+    # for idx in viewer.layers:
+    #     print(viewer.layers[str(idx)].metadata)
+    #     print(viewer.layers[str(idx)].metadata['fileName'])
+    #     print(viewer.layers[str(idx)].metadata['resolutionLevels'])
         
         # print(viewer.layers[str(idx)].data)
         # newData = viewer.layers[str(idx)].data
         # # newData = newData[:resolution_level]
         # newData = newData[0]
         # viewer.layers[str(idx)].data = newData
+
+
+
+# @magic_factory(auto_call=False,call_button="update",
+#                 resolution_level={'min': 0,'max': 9}
+#                 )
+# def res_change(
+#     viewer: napari.Viewer,
+#     resolution_level: int
+# ):
+    
+#     for idx in viewer.layers:
+#         print(viewer.layers[str(idx)].metadata)
+#         print(viewer.layers[str(idx)].metadata['fileName'])
+#         print(viewer.layers[str(idx)].metadata['resolutionLevels'])
+        
+#         # print(viewer.layers[str(idx)].data)
+#         # newData = viewer.layers[str(idx)].data
+#         # # newData = newData[:resolution_level]
+#         # newData = newData[0]
+#         # viewer.layers[str(idx)].data = newData
 
 
 
