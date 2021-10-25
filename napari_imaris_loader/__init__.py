@@ -8,7 +8,6 @@ except ImportError:
 
 #from ._reader import napari_get_reader
 from .reader import napari_get_reader
-from .controls import napari_experimental_provide_dock_widget
 
 
 
