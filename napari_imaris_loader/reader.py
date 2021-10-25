@@ -55,9 +55,9 @@ is thrown when switching from 3D to 2D view
     
 
 
-def ims_reader(path,resLevel='max', preCache=False):
+def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
     
-    # path = r"Z:\testData\bitplaneConverter.ims"  ## Dataset for testing
+    path = r"Z:\testData\bitplaneConverter.ims"  ## Dataset for testing
     
     imsClass = ims(path)
    
@@ -158,7 +158,49 @@ def ims_reader(path,resLevel='max', preCache=False):
     # Set multiscale based on whether multiple resolutions are present
     meta["multiscale"] = True if len(data) > 1 else False
 
-    return [(data,meta)]
+    if colorsIndependant and 'channel_axis' in meta:
+        channelAxis = meta['channel_axis']
+        
+        channelData = []
+        for cc in range(data[0].shape[channelAxis]):
+            singleChannel = []
+            for dd in data:
+                if channelAxis == 0:
+                    singleChannel.append(dd[cc])
+                elif channelAxis == 1:
+                    singleChannel.append(dd[:,cc])
+            channelData.append(singleChannel)
+                    
+        del(meta['channel_axis'])
+        
+        metaData = []
+        for cc in range(data[0].shape[channelAxis]):
+            singleChannel = {
+                'contrast_limits':meta['contrast_limits'],
+                'multiscale':meta['multiscale'],
+                'scale':meta['scale'][cc],
+                'name':meta['name'][cc]
+                             }
+            metaData.append(singleChannel)
+        
+        finalOutput = []
+        for dd,mm in zip(channelData,metaData):
+            finalOutput.append(
+                (dd,mm)
+                )
+        return finalOutput
+    
+    
+    else:
+        return [(data,meta)]
+        
+            
+            
+            
+
+
+
+    
 
 
 @napari_hook_implementation
