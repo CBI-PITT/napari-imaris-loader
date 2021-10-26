@@ -18,16 +18,14 @@ Napari plugin for loading Bitplane Imaris files '.ims'.
   * Image pyramids which are present in the native IMS format are automatically added to napari during file loading.
 * Chunks are implemented by dask and matched to the chunk sizes stored in each dataset.  (Napari appears to only ask for 2D chunks - unclear how helpful this feature is currently)
 * Successfully handles multi-terabyte multi-channel datasets (see unknowns).
+* Higher 3D rendering quality is enabled by a widget that reloads data after specifying the lowest resolution level (higher number = lower resolution) to be included in the multiscale series.
 
 ### Known Issues / limitations
 
 * Currently, this is **only an image loader**, and there are no features for loading or viewing objects
 * Napari sometimes throws errors indicating that it expected a 3D or 5D array but receives the other.
   * This sometimes *but relatively rarely* causes napari to crash
-  * The IMS class used in the reader represents all arrays to napari as a 5D dask.array (tczyx).  This is necessary because IMS only stores data as 3D arrays separated by time and color.  For example a 1 Timepoint / 1 Color, 3D 100x1024x1024px volume would have dimensions (1,1,100,1024,1024) and would be handed to napari as a 5D array rather than 3D.  Working on a fix for this.
   * Would like to enable Asynchronous Tiling of Images, but this results in more instability and causes crashes.
-* The lowest resolution level in the IMS file is often too small for detailed 3D renderings.
-  * Currently this is limited by the lowest resolution level being used by napari for 3D.
 * Contrast_Limits are currently determined by dtype and not the actual data.
   * float: [0,1], uint8: [0,254], uint16: [0,65534]
   * Future implementations may use the HistogramMax parameter to determine this.

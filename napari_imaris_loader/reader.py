@@ -177,6 +177,7 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
             singleChannel = {
                 'contrast_limits':meta['contrast_limits'],
                 'multiscale':meta['multiscale'],
+                'metadata':meta['metadata'],
                 'scale':meta['scale'][cc],
                 'name':meta['name'][cc]
                              }
