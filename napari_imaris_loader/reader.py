@@ -9,7 +9,7 @@ Napari plugin for reading imaris files as a multiresolution series.
 NOTE:  Currently "File/Preferences/Render Images Asynchronously" must be turned on for this plugin to work
 
 *** Issues remain with indexing and the shape of returned arrays.  
- 1) It is unclear if there is an issue with how I am impolementing slicing in the ims module
+ 1) It is unclear if there is an issue with how I am implementing slicing in the ims module
  2) Different expections from napari on the state of the data that is returned between the Image and Chunk_loader methods in ims module
 
 ** It appears that napari is only requesting 2D (YX) chunks from the loader during 2D rendering 
@@ -34,6 +34,8 @@ from napari_plugin_engine import napari_hook_implementation
 
     
 """
+Is this a bug in napari or specific to this reader?
+
 path = "...\napari-env\Lib\site-packages\napari\layers\image\image.py"
 Line 619-620
 should read:
@@ -84,13 +86,6 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
     channelNames = []
     for cc in range(imsClass.Channels):
         channelNames.append('Channel {}'.format(cc))
-    
-    
-    ## Posibility of determinign the lowest resolution level handed to napari
-    ## important for 3D rendering resolution?
-    # layer3D = -1
-    # if isinstance(layer3D,int):
-    #     data = data[:layer3D]
         
     
     data = []
@@ -194,13 +189,7 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
     else:
         return [(data,meta)]
         
-            
-            
-            
 
-
-
-    
 
 
 @napari_hook_implementation
@@ -210,17 +199,4 @@ def napari_get_reader(path):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-        
                 

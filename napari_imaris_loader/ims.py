@@ -114,6 +114,7 @@ class ims:
         and a slice of 5 or less dimentions will extract information from resolutionLevel 0.
         
         ResolutionLevelLock is used when building a multiresolution series to load into napari
+        This option enables a 5D slice to lock on to a specified resolution level.
         '''
         
         origionalKey = key
@@ -166,7 +167,7 @@ class ims:
         
         sliceReturned = getSlice(
                 self, 
-                r = res if res is not None else 0,
+                r = res if res is not None else 0, #Force ResolutionLock of None to be 0 when slicing
                 t = sliceFixer(self,key[0],'t',res=res),
                 c = sliceFixer(self,key[1],'c',res=res),
                 z = sliceFixer(self,key[2],'z',res=res),
@@ -438,6 +439,9 @@ def getSlice(imsClass,r,t,c,z,y,x):
         #     # sliceOutput = outputArray.shape
         #     # print('Incoming Slices: {} / Slice Requested: {} / Slice Output {}'.format(incomingSlices,chunkRequested,sliceOutput))
         #     return outputArray
+        
+        ## Above code only eliminates low single length dims
+        ## Squeeze will eliminate ALL single length dims
         if os.environ["NAPARI_ASYNC"] == '1':
             return np.squeeze(outputArray)
     except KeyError:

@@ -18,7 +18,7 @@ Napari plugin for loading Bitplane Imaris files '.ims'.
   * Image pyramids which are present in the native IMS format are automatically added to napari during file loading.
 * Chunks are implemented by dask and matched to the chunk sizes stored in each dataset.  (Napari appears to only ask for 2D chunks - unclear how helpful this feature is currently)
 * Successfully handles multi-terabyte multi-channel datasets (see unknowns).
-* Higher 3D rendering quality is enabled by a widget that reloads data after specifying the lowest resolution level (higher number = lower resolution) to be included in the multiscale series.
+* Higher 3D rendering quality is enabled by a widget that reloads data after specifying the lowest resolution level (higher number = lower resolution) to be included in the multiscale series.  Must be done while in 2D rendering mode.
 
 ### Known Issues / limitations
 

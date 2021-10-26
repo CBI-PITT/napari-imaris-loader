@@ -17,14 +17,14 @@ from napari.layers import Image
 
 
 @magic_factory(auto_call=False,call_button="update",
-                resolution_level={'min': 0,'max': 9,
+                lowest_resolution_level={'min': 0,'max': 9,
                                   'tooltip':'''Important only for 3D rendering.  
                                   Higher number is lower resolution.'''
                                   }
                 )
 def resolution_change(
     viewer: napari.Viewer,
-    resolution_level: int
+    lowest_resolution_level: int
 ) -> 'napari.types.LayerDataTuple':
     
     ''' 
@@ -43,7 +43,7 @@ def resolution_change(
         tupleOut = ims_reader(
             viewer.layers[str(idx)].metadata['fileName'],
             colorsIndependant=True,
-            resLevel=resolution_level
+            resLevel=lowest_resolution_level
             )
         break
     '''tupleOut is a tuple for each channel in the ims file
