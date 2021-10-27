@@ -78,7 +78,7 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
     
     ## Extract Voxel Spacing
     scale = imsClass.resolution
-    scale = [x/scale[-1] for x in scale]
+    # scale = [x/scale[-1] for x in scale]
     scale = [tuple(scale)]*imsClass.Channels
     print(scale)
     
