@@ -1,16 +1,26 @@
-# napari-imaris-loader
-
-[![License](https://img.shields.io/pypi/l/napari-imaris-loader.svg?color=green)](https://github.com/AlanMWatson/napari-imaris-loader/raw/master/LICENSE)
-[![PyPI](https://img.shields.io/pypi/v/napari-imaris-loader.svg?color=green)](https://pypi.org/project/napari-imaris-loader)
-[![Python Version](https://img.shields.io/pypi/pyversions/napari-imaris-loader.svg?color=green)](https://python.org)
-[![tests](https://github.com/AlanMWatson/napari-imaris-loader/workflows/tests/badge.svg)](https://github.com/AlanMWatson/napari-imaris-loader/actions)
-[![codecov](https://codecov.io/gh/AlanMWatson/napari-imaris-loader/branch/master/graph/badge.svg)](https://codecov.io/gh/AlanMWatson/napari-imaris-loader)
-
-Napari plugin for loading Bitplane Imaris files '.ims'.  
 
 
-## Notes:
-**For this plugin to work "File/Preferences/Experimental/Render Images Asynchronously" must be selected.**
+# Description
+
+This plugin enables viewing of Bitplane Imaris files, including very large datasets.  The GIFs below demonstrate rendering of a ~2TB IMS file containing a 2 color whole mouse brain.  The plugin has been tested on datasets as large as 20TB.
+
+**NOTE: For this plugin to work "File/Preferences/Experimental/Render Images Asynchronously" must be selected.**
+
+
+
+### Open IMS file:
+
+![Opening IMS File](https://github.com/AlanMWatson/napari-imaris-loader/blob/main/.napari/opening.gif?raw=true "Opening IMS File")
+
+
+
+### Render in 3D:
+
+A plugin is provided to dynamically reload the data after selecting the lowest resolution level to be included in the viewer.  Since napari only renders the lowest resolution, the user can use this plugin to control the quality of 3D rendering.  See features and limitations for tips on suggested usage.
+
+![3D Rendering and Quality Adjustment](https://github.com/AlanMWatson/napari-imaris-loader/blob/main/.napari/3D_plugin.gif?raw=true "3D Rendering and Quality Adjustment")
+
+
 
 ### Features
 
@@ -18,7 +28,7 @@ Napari plugin for loading Bitplane Imaris files '.ims'.
   * Image pyramids which are present in the native IMS format are automatically added to napari during file loading.
 * Chunks are implemented by dask and matched to the chunk sizes stored in each dataset.  (Napari appears to only ask for 2D chunks - unclear how helpful this feature is currently)
 * Successfully handles multi-terabyte multi-channel datasets (see unknowns).
-* Higher 3D rendering quality is enabled by a widget that reloads data after specifying the lowest resolution level (higher number = lower resolution) to be included in the multiscale series.  Must be done while in 2D rendering mode.
+* Higher 3D rendering quality is enabled by a widget that reloads data after specifying the lowest resolution level (higher number = lower resolution) to be included in the multiscale series.  Must be done while in 2D rendering mode to avoid crash.
 
 ### Known Issues / limitations
 

@@ -1,92 +1,98 @@
 
 
-<!-- This file is designed to provide you with a starting template for documenting
-the functionality of your plugin. Its content will be rendered on your plugin's
-napari hub page.
-
-The sections below are given as a guide for the flow of information only, and
-are in no way prescriptive. You should feel free to merge, remove, add and 
-rename sections at will to make this document work best for your plugin. 
-
 # Description
 
-This should be a detailed description of the context of your plugin and its 
-intended purpose.
+This plugin enables viewing of Bitplane Imaris files, including very large datasets.  The GIFs below demonstrate rendering of a ~2TB IMS file containing a 2 color whole mouse brain.  The plugin has been tested on datasets as large as 20TB.
 
-If you have videos or screenshots of your plugin in action, you should include them
-here as well, to make them front and center for new users. 
+**NOTE: For this plugin to work "File/Preferences/Experimental/Render Images Asynchronously" must be selected.**
 
-You should use absolute links to these assets, so that we can easily display them 
-on the hub. The easiest way to include a video is to use a GIF, for example hosted
-on imgur. You can then reference this GIF as an image.
 
-![Example GIF hosted on Imgur](https://i.imgur.com/A5phCX4.gif)
 
-Note that GIFs larger than 5MB won't be rendered by GitHub - we will however,
-render them on the napari hub.
+### Open IMS file:
 
-The other alternative, if you prefer to keep a video, is to use GitHub's video
-embedding feature.
+![Opening IMS File](https://github.com/AlanMWatson/napari-imaris-loader/blob/main/.napari/opening.gif?raw=true "Opening IMS File")
 
-1. Push your `DESCRIPTION.md` to GitHub on your repository (this can also be done
-as part of a Pull Request)
-2. Edit `.napari/DESCRIPTION.md` **on GitHub**.
-3. Drag and drop your video into its desired location. It will be uploaded and
-hosted on GitHub for you, but will not be placed in your repository.
-4. We will take the resolved link to the video and render it on the hub.
 
-Here is an example of an mp4 video embedded this way.
 
-https://user-images.githubusercontent.com/17995243/120088305-6c093380-c132-11eb-822d-620e81eb5f0e.mp4
+### Render in 3D:
 
-# Intended Audience & Supported Data
+A plugin is provided to dynamically reload the data after selecting the lowest resolution level to be included in the viewer.  Since napari only renders the lowest resolution, the user can use this plugin to control the quality of 3D rendering.  See features and limitations for tips on suggested usage.
 
-This section should describe the target audience for this plugin (any knowledge,
-skills and experience required), as well as a description of the types of data
-supported by this plugin.
+![3D Rendering and Quality Adjustment](https://github.com/AlanMWatson/napari-imaris-loader/blob/main/.napari/3D_plugin.gif?raw=true "3D Rendering and Quality Adjustment")
 
-Try to make the data description as explicit as possible, so that users know the
-format your plugin expects. This applies both to reader plugins reading file formats
-and to function/dock widget plugins accepting layers and/or layer data.
-For example, if you know your plugin only works with 3D integer data in "tyx" order,
-make sure to mention this.
 
-If you know of researchers, groups or labs using your plugin, or if it has been cited
-anywhere, feel free to also include this information here.
 
-# Quickstart
+### Features
 
-This section should go through step-by-step examples of how your plugin should be used.
-Where your plugin provides multiple dock widgets or functions, you should split these
-out into separate subsections for easy browsing. Include screenshots and videos
-wherever possible to elucidate your descriptions. 
+* Multiscale Rendering
+  * Image pyramids which are present in the native IMS format are automatically added to napari during file loading.
+* Chunks are implemented by dask and matched to the chunk sizes stored in each dataset.  (Napari appears to only ask for 2D chunks - unclear how helpful this feature is currently)
+* Successfully handles multi-terabyte multi-channel datasets (see unknowns).
+* Higher 3D rendering quality is enabled by a widget that reloads data after specifying the lowest resolution level (higher number = lower resolution) to be included in the multiscale series.  Must be done while in 2D rendering mode to avoid crash.
 
-Ideally, this section should start with minimal examples for those who just want a
-quick overview of the plugin's functionality, but you should definitely link out to
-more complex and in-depth tutorials highlighting any intricacies of your plugin, and
-more detailed documentation if you have it.
+### Known Issues / limitations
 
-# Additional Install Steps (uncommon)
-We will be providing installation instructions on the hub, which will be sufficient
-for the majority of plugins. They will include instructions to pip install, and
-to install via napari itself.
+* Currently, this is **only an image loader**, and there are no features for loading or viewing objects
+* Napari sometimes throws errors indicating that it expected a 3D or 5D array but receives the other.
+  * This sometimes *but relatively rarely* causes napari to crash
+  * Would like to enable Asynchronous Tiling of Images, but this results in more instability and causes crashes.
+* Contrast_Limits are currently determined by dtype and not the actual data.
+  * float: [0,1], uint8: [0,254], uint16: [0,65534]
+  * Future implementations may use the HistogramMax parameter to determine this.
+* 3D rendering works, but it is suggested to turn on 1 channel at a time starting from the highest channel to avoid some OpenGL errors and misalignment errors.
+  * For example: Turn on only Channel 1, activate 3D rendering, then turn on Channel 0.
 
-Most plugins can be installed out-of-the-box by just specifying the package requirements
-over in `setup.cfg`. However, if your plugin has any more complex dependencies, or 
-requires any additional preparation before (or after) installation, you should add 
-this information here.
+### Unknowns
 
-# Getting Help
+* Time series data has not been tested, but it has been designed to work.
 
-This section should point users to your preferred support tools, whether this be raising
-an issue on GitHub, asking a question on image.sc, or using some other method of contact.
-If you distinguish between usage support and bug/feature support, you should state that
-here.
 
-# How to Cite
+----------------------------------
 
-Many plugins may be used in the course of published (or publishable) research, as well as
-during conference talks and other public facing events. If you'd like to be cited in
-a particular format, or have a DOI you'd like used, you should provide that information here. -->
+This [napari] plugin was generated with [Cookiecutter] using with [@napari]'s [cookiecutter-napari-plugin] template.
 
-The developer has not yet provided a napari-hub specific description.
+<!--
+Don't miss the full getting started guide to set up your new package:
+https://github.com/napari/cookiecutter-napari-plugin#getting-started
+
+and review the napari docs for plugin developers:
+https://napari.org/docs/plugins/index.html
+-->
+
+## Installation
+
+You can install `napari-imaris-loader` via [pip]:
+
+    pip install napari-imaris-loader
+
+## Contributing
+
+Contributions are very welcome. Tests can be run with [tox], please ensure
+the coverage at least stays the same before you submit a pull request.
+
+## License
+
+Distributed under the terms of the [BSD-3] license,
+"napari-imaris-loader" is free and open source software
+
+## Issues
+
+If you encounter any problems, please [file an issue] along with a detailed description.
+
+[napari]: https://github.com/napari/napari
+[Cookiecutter]: https://github.com/audreyr/cookiecutter
+[@napari]: https://github.com/napari
+[MIT]: http://opensource.org/licenses/MIT
+[BSD-3]: http://opensource.org/licenses/BSD-3-Clause
+[GNU GPL v3.0]: http://www.gnu.org/licenses/gpl-3.0.txt
+[GNU LGPL v3.0]: http://www.gnu.org/licenses/lgpl-3.0.txt
+[Apache Software License 2.0]: http://www.apache.org/licenses/LICENSE-2.0
+[Mozilla Public License 2.0]: https://www.mozilla.org/media/MPL/2.0/index.txt
+[cookiecutter-napari-plugin]: https://github.com/napari/cookiecutter-napari-plugin
+
+[file an issue]: https://github.com/AlanMWatson/napari-imaris-loader/issues
+
+[napari]: https://github.com/napari/napari
+[tox]: https://tox.readthedocs.io/en/latest/
+[pip]: https://pypi.org/project/pip/
+[PyPI]: https://pypi.org/
