@@ -148,7 +148,7 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
     # Option to cut off lower resolutions to improve 3D rendering
     # May provide a widgit that can impletment this after the dataset is loaded
     if isinstance(resLevel,int) and resLevel+1 > len(data):
-        raise ValueError('Selected resolution level is too high:  Maximum number = {}'.format(imsClass.ResolutionLevels))
+        raise ValueError('Selected resolution level is too high:  Options are between 0 and {}'.format(imsClass.ResolutionLevels-1))
     
     data = data if resLevel=='max' else data[:resLevel+1]
     
