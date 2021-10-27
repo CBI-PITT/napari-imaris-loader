@@ -80,12 +80,16 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
     scale = imsClass.resolution
     # scale = [x/scale[-1] for x in scale]
     scale = [tuple(scale)]*imsClass.Channels
+    
+    
     print(scale)
     
     ## Display current Channel Names
     channelNames = []
     for cc in range(imsClass.Channels):
         channelNames.append('Channel {}'.format(cc))
+    if len(channelNames) == 1:
+        channelNames = channelNames[0]
         
     
     data = []
@@ -104,7 +108,7 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
     
     # Base metadata that apply to all senarios
     meta = {
-        "scale": scale,
+        "scale": scale if len(scale) > 1 else scale[0],
         "contrast_limits": contrastLimits,
         "name": channelNames,
         "metadata": {'fileName':imsClass.filePathComplete,
@@ -112,11 +116,13 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
                      }
         }
     
-    # Reslice to remove dangling single dimensions
+    # Reslice to remove dangling single dimensions, this may not be necessary anymore
     inwardSlice = 0
     for ii in range(len(imsClass.shape)):
         if imsClass.shape[ii] == 1:
             inwardSlice += 1
+        else:
+            break
     
     if inwardSlice == 0:
         for idx,_ in enumerate(data):
@@ -128,12 +134,26 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
     elif inwardSlice == 2:
         for idx,_ in enumerate(data):
             data[idx] = data[idx][0,0]
+            meta['channel_axis'] = None
     elif inwardSlice == 3:
         for idx,_ in enumerate(data):
             data[idx] = data[idx][0,0,0]
+            meta['channel_axis'] = None
     elif inwardSlice == 4:
         for idx,_ in enumerate(data):
             data[idx] = data[idx][0,0,0,0]
+            meta['channel_axis'] = None
+    
+    # Remove single color dims, this may not be necessary 
+    if len(data) >= 4 and data[0].shape[-4] == 1:
+        for idx,_ in enumerate(data):
+            data[idx] = data[idx][...,0,:,:,:]
+        meta['channel_axis'] = None
+    
+    # # Remove single Z dims, this may not be necessary, may cause scal issues 
+    # if len(data) >= 3 and data[0].shape[-3] == 1:
+    #     for idx,_ in enumerate(data):
+    #         data[idx] = data[idx][...,0,:,:]
     
     ## Possibility of implementing rapid caching of some data (lower resolution levels?) prior to visualization.
     ## done by calling a simple calculation over the whole dask array da.min()?
@@ -154,8 +174,11 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
     
     # Set multiscale based on whether multiple resolutions are present
     meta["multiscale"] = True if len(data) > 1 else False
+    
+    # if isinstance(channelNames,str):
+    #     colorsIndependant = True
 
-    if colorsIndependant and 'channel_axis' in meta:
+    if colorsIndependant and 'channel_axis' in meta and meta['channel_axis'] is not None:
         channelAxis = meta['channel_axis']
         
         channelData = []
