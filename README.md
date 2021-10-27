@@ -10,7 +10,7 @@ This plugin enables viewing of Bitplane Imaris files, including very large datas
 
 ### Open IMS file:
 
-![Opening IMS File](https://github.com/AlanMWatson/napari-imaris-loader/blob/main/gifs/opening.gif?raw=true "Opening IMS File")
+![Imgur](https://i.imgur.com/MZNlWtM.gif "Open IMS file")
 
 
 
@@ -18,9 +18,7 @@ This plugin enables viewing of Bitplane Imaris files, including very large datas
 
 A plugin is provided to dynamically reload the data after selecting the lowest resolution level to be included in the viewer.  Since napari only renders the lowest resolution, the user can use this plugin to control the quality of 3D rendering.  See features and limitations for tips on suggested usage.
 
-![3D Rendering and Quality Adjustment](https://github.com/AlanMWatson/napari-imaris-loader/blob/main/gifs/3D_plugin.gif?raw=true "3D Rendering and Quality Adjustment")
-
-
+![Imgur](https://i.imgur.com/ByHb0wI.gif "3D Rendering and Quality Adjustment")
 
 ### Features
 
