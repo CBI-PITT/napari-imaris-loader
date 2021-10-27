@@ -147,7 +147,10 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
 
     # Option to cut off lower resolutions to improve 3D rendering
     # May provide a widgit that can impletment this after the dataset is loaded
-    data = data if resLevel=='max' else data[:resLevel]
+    if isinstance(resLevel,int) and resLevel+1 > len(data):
+        raise ValueError('Selected resolution level is too high:  Maximum number = {}'.format(imsClass.ResolutionLevels))
+    
+    data = data if resLevel=='max' else data[:resLevel+1]
     
     # Set multiscale based on whether multiple resolutions are present
     meta["multiscale"] = True if len(data) > 1 else False
@@ -180,14 +183,19 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
         
         finalOutput = []
         for dd,mm in zip(channelData,metaData):
-            finalOutput.append(
-                (dd,mm)
-                )
+            if len(dd) > 1:
+                finalOutput.append(
+                    (dd,mm)
+                    )
+            else:
+                finalOutput.append(
+                    (dd[0],mm)
+                    )
         return finalOutput
     
     
     else:
-        return [(data,meta)]
+        return [(data if len(data) > 1 else data[0],meta)]
         
 
 

@@ -40,11 +40,16 @@ def resolution_change(
     ## Load data for IMS file using the loader function
     for idx in viewer.layers:
         # print(viewer.layers[str(idx)].data)
-        tupleOut = ims_reader(
-            viewer.layers[str(idx)].metadata['fileName'],
-            colorsIndependant=True,
-            resLevel=lowest_resolution_level
-            )
+        try:
+            tupleOut = ims_reader(
+                viewer.layers[str(idx)].metadata['fileName'],
+                colorsIndependant=True,
+                resLevel=lowest_resolution_level
+                )
+        except ValueError as e:
+            print(e)
+            return
+        
         break
     '''tupleOut is a tuple for each channel in the ims file
     structured as: [ ( [listOfMultiscaleDataCh1],metaDataDict ), 
