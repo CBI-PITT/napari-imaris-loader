@@ -10,7 +10,7 @@ This plugin enables viewing of Bitplane Imaris files, including very large datas
 
 ### Open IMS file:
 
-![Opening IMS File](https://github.com/AlanMWatson/napari-imaris-loader/blob/main/.napari/opening.gif?raw=true "Opening IMS File")
+![Opening IMS File](https://github.com/AlanMWatson/napari-imaris-loader/blob/main/gifs/opening.gif?raw=true "Opening IMS File")
 
 
 
@@ -18,7 +18,7 @@ This plugin enables viewing of Bitplane Imaris files, including very large datas
 
 A plugin is provided to dynamically reload the data after selecting the lowest resolution level to be included in the viewer.  Since napari only renders the lowest resolution, the user can use this plugin to control the quality of 3D rendering.  See features and limitations for tips on suggested usage.
 
-![3D Rendering and Quality Adjustment](https://github.com/AlanMWatson/napari-imaris-loader/blob/main/.napari/3D_plugin.gif?raw=true "3D Rendering and Quality Adjustment")
+![3D Rendering and Quality Adjustment](https://github.com/AlanMWatson/napari-imaris-loader/blob/main/gifs/3D_plugin.gif?raw=true "3D Rendering and Quality Adjustment")
 
 
 
@@ -27,7 +27,7 @@ A plugin is provided to dynamically reload the data after selecting the lowest r
 * Multiscale Rendering
   * Image pyramids which are present in the native IMS format are automatically added to napari during file loading.
 * Chunks are implemented by dask and matched to the chunk sizes stored in each dataset.  (Napari appears to only ask for 2D chunks - unclear how helpful this feature is currently)
-* Successfully handles multi-terabyte multi-channel datasets (see unknowns).
+* Successfully handles multi-terabyte multi-timepoint multi-channel datasets.
 * Higher 3D rendering quality is enabled by a widget that reloads data after specifying the lowest resolution level (higher number = lower resolution) to be included in the multiscale series.  Must be done while in 2D rendering mode to avoid crash.
 
 ### Known Issues / limitations
@@ -42,10 +42,6 @@ A plugin is provided to dynamically reload the data after selecting the lowest r
 * 3D rendering works, but it is suggested to turn on 1 channel at a time starting from the highest channel to avoid some OpenGL errors and misalignment errors.
   * For example: Turn on only Channel 1, activate 3D rendering, then turn on Channel 0.
   * 3D rendering seems to be limited more by computer RAM rather than vRAM.
-
-### Unknowns
-
-* Time series data has not been tested, but it has been designed to work.
 
 
 ----------------------------------
