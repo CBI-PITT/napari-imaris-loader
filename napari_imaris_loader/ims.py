@@ -47,16 +47,11 @@ class ims:
             def readNumDsetAttrib(self, attrib):
                 return float(readAttribute(self, 'DataSetInfo/Image',attrib))
                 
-            # self.resolution = (round(float(readAttribute(self, 'DataSetInfo/Image', 'ExtMax2')) / float(readAttribute(self, 'DataSetInfo/Image', 'Z')),3),\
-            #                        round(float(readAttribute(self, 'DataSetInfo/Image', 'ExtMax1')) / float(readAttribute(self, 'DataSetInfo/Image', 'Y')),3),\
-            #                            round(float(readAttribute(self, 'DataSetInfo/Image', 'ExtMax0')) / float(readAttribute(self, 'DataSetInfo/Image', 'X')),3))
-                
             self.resolution = (
                 round((readNumDsetAttrib(self, 'ExtMax2') - readNumDsetAttrib(self, 'ExtMin2')) / readNumDsetAttrib(self, 'Z'),3),
                 round((readNumDsetAttrib(self, 'ExtMax1') - readNumDsetAttrib(self, 'ExtMin1')) / readNumDsetAttrib(self, 'Y'),3),
                 round((readNumDsetAttrib(self, 'ExtMax0') - readNumDsetAttrib(self, 'ExtMin0')) / readNumDsetAttrib(self, 'X'),3)
                             )
-            print(self.resolution)
             
             
             # print(self.resolution)
