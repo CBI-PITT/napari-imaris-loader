@@ -57,6 +57,8 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
     # path = r"Z:\testData\bitplaneConverter.ims"  ## Dataset for testing
     #print('I AM IN THE READER')
     
+    # path = r"Z:\toTest\bil\download.brainimagelibrary.org\2b\da\2bdaf9e66a246844\mouseID_405429-182725\CH1_0.35_100um\ch1_0.35_100um.ims"
+    
     imsClass = ims(path)
    
     if imsClass.dtype==np.dtype('uint16'):
@@ -144,11 +146,11 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
             data[idx] = data[idx][0,0,0,0]
             meta['channel_axis'] = None
     
-    # Remove single color dims, this may not be necessary 
-    if len(data) >= 4 and data[0].shape[-4] == 1:
-        for idx,_ in enumerate(data):
-            data[idx] = data[idx][...,0,:,:,:]
-        meta['channel_axis'] = None
+    # # Remove single color dims, this may not be necessary 
+    # if len(data) >= 4 and data[0].shape[-4] == 1:
+    #     for idx,_ in enumerate(data):
+    #         data[idx] = data[idx][...,0,:,:,:]
+    #     meta['channel_axis'] = None
     
     # # Remove single Z dims, this may not be necessary, may cause scal issues 
     # if len(data) >= 3 and data[0].shape[-3] == 1:
