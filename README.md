@@ -6,11 +6,9 @@ This plugin enables viewing of Bitplane Imaris files, including very large datas
 
 **NOTE: For this plugin to work "File/Preferences/Experimental/Render Images Asynchronously" must be selected.**
 
-
-
 ### Open IMS file:
 
-![Imgur](https://i.imgur.com/MZNlWtM.gif "Open IMS file")
+![Open IMS file GIF](https://i.imgur.com/ByHb0wI.gif "Open IMS file")
 
 
 
@@ -18,7 +16,7 @@ This plugin enables viewing of Bitplane Imaris files, including very large datas
 
 A plugin is provided to dynamically reload the data after selecting the lowest resolution level to be included in the viewer.  Since napari only renders the lowest resolution, the user can use this plugin to control the quality of 3D rendering.  See features and limitations for tips on suggested usage.
 
-![Imgur](https://i.imgur.com/ByHb0wI.gif "3D Rendering and Quality Adjustment")
+![3D Rendering and Quality Adjustment GIF](https://i.imgur.com/MZNlWtM.gif "3D Rendering and Quality Adjustment")
 
 ### Features
 
@@ -26,6 +24,7 @@ A plugin is provided to dynamically reload the data after selecting the lowest r
   * Image pyramids which are present in the native IMS format are automatically added to napari during file loading.
 * Chunks are implemented by dask and matched to the chunk sizes stored in each dataset.  (Napari appears to only ask for 2D chunks - unclear how helpful this feature is currently)
 * Successfully handles multi-terabyte multi-timepoint multi-channel datasets.
+* Tested with all sample files provided by Bitplane.
 * Higher 3D rendering quality is enabled by a widget that reloads data after specifying the lowest resolution level (higher number = lower resolution) to be included in the multiscale series.  Must be done while in 2D rendering mode to avoid crash.
 
 ### Known Issues / limitations
