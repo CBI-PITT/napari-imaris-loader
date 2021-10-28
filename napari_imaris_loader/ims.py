@@ -33,8 +33,6 @@ class ims:
         self.ResolutionLevelLock = ResolutionLevelLock
         
         
-        self.open()
-        
         with h5py.File(file, 'r') as hf:
             # hf = h5py.File(file, 'r')
             dataSet = hf['DataSet']
@@ -103,8 +101,7 @@ class ims:
             self.dtype = self.metaData[self.ResolutionLevelLock,t,c,'dtype']
             
             ##  Should define a method to change the ResolutionLevelLock after class in initialized
-                    
-        # print(self.metaData)
+        self.open()
                 
     # def __enter__(self):
     #     print('Opening file: {}'.format(self.filePathComplete))
@@ -118,11 +115,25 @@ class ims:
     #     self.hf = None
         
     def open(self):
-        print('Opening file: {} \n'.format(self.filePathComplete))
-        self.hf = h5py.File(self.filePathComplete, 'r')
-        # self.hf = h5py.File(self.filePathComplete, 'r',swmr=True, rdcc_nbytes=(1024^3)*10, rdcc_w0=0.75,rdcc_nslots=1e6)
+        # print('Opening file: {} \n'.format(self.filePathComplete))
+        self.hf = h5py.File(self.filePathComplete, 'r',swmr=True)
+        
+        ## h5py does not seem to work under any circumstances
+        # self.hf = h5py.File(self.filePathComplete, 'r',swmr=True, rdcc_nbytes=(1024^3)*10, rdcc_w0=0,rdcc_nslots=1e6)
         self.dataset = self.hf['DataSet']
-        print('OPENED file: {} \n'.format(self.filePathComplete))
+        
+        # self.datasets = {}
+        # print(self.ResolutionLevels)
+        # print(self.TimePoints)
+        # print(self.Channels)
+        # for r,t,c in itertools.product(range(self.ResolutionLevels),range(self.TimePoints),range(self.Channels)):
+        #     alias = self.hf[locationGenerator(r,t,c,data='data', contextMgr=False)]
+        #     self.datasets[locationGenerator(r,t,c,data='data', contextMgr=False)] = alias
+        #     del alias
+        
+        
+        # 
+        # print('OPENED file: {} \n'.format(self.filePathComplete))
     
     def __del__(self):
         self.close()
@@ -130,11 +141,11 @@ class ims:
     def close(self):
         ## Implement flush?
         print('Closing file: {} \n'.format(self.filePathComplete))
-        self.hf.close()
+        if self.hf is not None:
+            self.hf.close()
         self.hf = None
         self.dataset = None
         print('CLOSED file: {} \n'.format(self.filePathComplete))
-        
     
     def __getitem__(self, key):
         # print(key)
@@ -447,14 +458,28 @@ def getSlice(self,r,t,c,z,y,x):
     ySize = len(range(self.metaData[(r,0,0,'shape')][-2])[y])
     xSize = len(range(self.metaData[(r,0,0,'shape')][-1])[x])
     
-    outputArray = np.zeros((len(tSize),len(cSize),zSize,ySize,xSize))
+    # Casting zeros to specific dtype signifigantly speeds up data retrieval
+    outputArray = np.zeros((len(tSize),len(cSize),zSize,ySize,xSize), dtype=self.dtype)
     # chunkRequested = outputArray.shape
     
     if self.hf is not None:  #  contextMgr=True
         for idxt, t in enumerate(tSize):
             for idxc, c in enumerate(cSize):
-                dSetString = locationGenerator(r,t,c,data='data',contextMgr=True)
-                outputArray[idxt,idxc,:,:,:] = self.dataset[dSetString][z,y,x]
+                
+                # dSetString = locationGenerator(r,t,c,data='data',contextMgr=True)
+                # outputArray[idxt,idxc,:,:,:] = self.dataset[dSetString][z,y,x]
+                
+                # dSetString = locationGenerator(r,t,c,data='data',contextMgr=True)
+                # tempDataset = self.dataset[dSetString]
+                # tempDataset.read_direct(outputArray,np.s_[z,y,x], np.s_[idxt,idxc,:,:,:])
+                
+                # Below method is faster than all other tried
+                # dSetString = locationGenerator(r,t,c,data='data',contextMgr=True)
+                # self.dataset[dSetString].read_direct(outputArray,np.s_[z,y,x], np.s_[idxt,idxc,:,:,:])
+                
+                ## Below method is faster than all other tried
+                dSetString = locationGenerator(r,t,c,data='data',contextMgr=False)
+                self.hf[dSetString].read_direct(outputArray,np.s_[z,y,x], np.s_[idxt,idxc,:,:,:])
                 
     # else:
     #     with h5py.File(self.filePathComplete, 'r') as hf:
