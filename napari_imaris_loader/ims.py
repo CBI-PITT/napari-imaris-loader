@@ -103,6 +103,16 @@ class ims:
                     
         # print(self.metaData)
                 
+    def __enter__(self):
+        print('Opening file: {}'.format(self.filePathComplete))
+        self.hf = h5py.File(self.filePathComplete, 'r')
+        self.dataset = self.hf['DataSet']
+    
+    
+    def __exit__(self, type, value, traceback):
+        ## Implement flush?
+        self.hf.close()
+        
     def __getitem__(self, key):
         # print(key)
         
