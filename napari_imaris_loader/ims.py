@@ -32,6 +32,7 @@ class ims:
         self.metaData = {}
         self.ResolutionLevelLock = ResolutionLevelLock
         
+        
         with h5py.File(file, 'r') as hf:
             # hf = h5py.File(file, 'r')
             dataSet = hf['DataSet']
@@ -100,9 +101,52 @@ class ims:
             self.dtype = self.metaData[self.ResolutionLevelLock,t,c,'dtype']
             
             ##  Should define a method to change the ResolutionLevelLock after class in initialized
-                    
-        # print(self.metaData)
+        self.open()
                 
+    # def __enter__(self):
+    #     print('Opening file: {}'.format(self.filePathComplete))
+    #     self.hf = h5py.File(self.filePathComplete, 'r')
+    #     self.dataset = self.hf['DataSet']
+    
+    
+    # def __exit__(self, type, value, traceback):
+    #     ## Implement flush?
+    #     self.hf.close()
+    #     self.hf = None
+        
+    def open(self):
+        # print('Opening file: {} \n'.format(self.filePathComplete))
+        self.hf = h5py.File(self.filePathComplete, 'r',swmr=True)
+        
+        ## h5py does not seem to work under any circumstances
+        # self.hf = h5py.File(self.filePathComplete, 'r',swmr=True, rdcc_nbytes=(1024^3)*10, rdcc_w0=0,rdcc_nslots=1e6)
+        self.dataset = self.hf['DataSet']
+        
+        # self.datasets = {}
+        # print(self.ResolutionLevels)
+        # print(self.TimePoints)
+        # print(self.Channels)
+        # for r,t,c in itertools.product(range(self.ResolutionLevels),range(self.TimePoints),range(self.Channels)):
+        #     alias = self.hf[locationGenerator(r,t,c,data='data', contextMgr=False)]
+        #     self.datasets[locationGenerator(r,t,c,data='data', contextMgr=False)] = alias
+        #     del alias
+        
+        
+        # 
+        # print('OPENED file: {} \n'.format(self.filePathComplete))
+    
+    def __del__(self):
+        self.close()
+    
+    def close(self):
+        ## Implement flush?
+        print('Closing file: {} \n'.format(self.filePathComplete))
+        if self.hf is not None:
+            self.hf.close()
+        self.hf = None
+        self.dataset = None
+        print('CLOSED file: {} \n'.format(self.filePathComplete))
+    
     def __getitem__(self, key):
         # print(key)
         
@@ -249,7 +293,7 @@ def sliceFixer(self,sliceObj,dim,res):
 
 ##########################################################################################
 
-def locationGenerator(r,t,c,data='data'):
+def locationGenerator(r,t,c,data='data', contextMgr=False):
     """
     Given R, T, C, this funtion will generate a path to data in an imaris file
     default data == 'data' the path will reference with array of data
@@ -259,6 +303,8 @@ def locationGenerator(r,t,c,data='data'):
     location = 'DataSet/ResolutionLevel {}/TimePoint {}/Channel {}'.format(r,t,c)
     if data == 'data':
         location = location + '/Data'
+    if contextMgr == True:
+        location = location[8:]
     return location
         
 def readAttribute(imsClass, location, attrib):
@@ -397,7 +443,7 @@ def cache(location=None,mem_size=1e9,disk_size=1e9):
 
 
 
-def getSlice(imsClass,r,t,c,z,y,x):
+def getSlice(self,r,t,c,z,y,x):
     
     '''
     IMS stores 3D datasets ONLY with Resolution, Time, and Color as 'directory'
@@ -406,22 +452,41 @@ def getSlice(imsClass,r,t,c,z,y,x):
     '''
     
     # incomingSlices = (r,t,c,z,y,x)
-    tSize = list(range(imsClass.TimePoints)[t])
-    cSize = list(range(imsClass.Channels)[c])
-    zSize = len(range(imsClass.metaData[(r,0,0,'shape')][-3])[z])
-    ySize = len(range(imsClass.metaData[(r,0,0,'shape')][-2])[y])
-    xSize = len(range(imsClass.metaData[(r,0,0,'shape')][-1])[x])
+    tSize = list(range(self.TimePoints)[t])
+    cSize = list(range(self.Channels)[c])
+    zSize = len(range(self.metaData[(r,0,0,'shape')][-3])[z])
+    ySize = len(range(self.metaData[(r,0,0,'shape')][-2])[y])
+    xSize = len(range(self.metaData[(r,0,0,'shape')][-1])[x])
     
-    outputArray = np.zeros((len(tSize),len(cSize),zSize,ySize,xSize))
+    # Casting zeros to specific dtype signifigantly speeds up data retrieval
+    outputArray = np.zeros((len(tSize),len(cSize),zSize,ySize,xSize), dtype=self.dtype)
     # chunkRequested = outputArray.shape
     
-    with h5py.File(imsClass.filePathComplete, 'r') as hf:
+    if self.hf is not None:  #  contextMgr=True
         for idxt, t in enumerate(tSize):
             for idxc, c in enumerate(cSize):
-                # print(t)
-                # print(c)
-                dSetString = locationGenerator(r,t,c,data='data')
-                outputArray[idxt,idxc,:,:,:] = hf[dSetString][z,y,x]
+                
+                # dSetString = locationGenerator(r,t,c,data='data',contextMgr=True)
+                # outputArray[idxt,idxc,:,:,:] = self.dataset[dSetString][z,y,x]
+                
+                # dSetString = locationGenerator(r,t,c,data='data',contextMgr=True)
+                # tempDataset = self.dataset[dSetString]
+                # tempDataset.read_direct(outputArray,np.s_[z,y,x], np.s_[idxt,idxc,:,:,:])
+                
+                # Below method is faster than all other tried
+                # dSetString = locationGenerator(r,t,c,data='data',contextMgr=True)
+                # self.dataset[dSetString].read_direct(outputArray,np.s_[z,y,x], np.s_[idxt,idxc,:,:,:])
+                
+                ## Below method is faster than all other tried
+                dSetString = locationGenerator(r,t,c,data='data',contextMgr=False)
+                self.hf[dSetString].read_direct(outputArray,np.s_[z,y,x], np.s_[idxt,idxc,:,:,:])
+                
+    # else:
+    #     with h5py.File(self.filePathComplete, 'r') as hf:
+    #         for idxt, t in enumerate(tSize):
+    #             for idxc, c in enumerate(cSize):
+    #                 dSetString = locationGenerator(r,t,c,data='data')
+    #                 outputArray[idxt,idxc,:,:,:] = hf[dSetString][z,y,x]
     
     
     ''' Some issues here with the output of these arrays.  Napari sometimes expects
