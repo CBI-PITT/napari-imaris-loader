@@ -5,7 +5,8 @@ Created on Sun Oct 24 10:49:36 2021
 @author: alpha
 """
 
-import os, sys, glob, itertools, functools, pickle, shutil, random #, hashlib
+import os, sys, glob, itertools, functools, pickle, shutil, random
+import hashlib
 import numpy as np
 # from functools import lru_cache
 from psutil import virtual_memory
@@ -63,6 +64,7 @@ class ims:
                                         int(readAttribute(self, 'DataSetInfo/Image', 'X')))
             
             self.chunks = (1,1,data.chunks[0],data.chunks[1],data.chunks[2])
+            self.chunksize = self.chunks
             self.ndim = len(self.shape)
             self.dtype = data.dtype
             self.shapeH5Array = data.shape
@@ -90,6 +92,10 @@ class ims:
                 self.metaData[r,t,c,'chunks'] = (1,1,hf[locationData].chunks[0],hf[locationData].chunks[1],hf[locationData].chunks[2])
                 self.metaData[r,t,c,'shapeH5Array'] = hf[locationData].shape
                 self.metaData[r,t,c,'dtype'] = hf[locationData].dtype
+                
+                self.metaData[r,t,c,'chunkLocations'] = {}
+                for idx,ii in enumerate(hf[locationData].iter_chunks()):
+                    self.metaData[r,t,c,'chunkLocations'][idx] = ii
                 
                 
         if isinstance(self.ResolutionLevelLock, int):
@@ -252,6 +258,11 @@ def sliceFixer(self,sliceObj,dim,res):
             'x':self.metaData[(res,0,0,'shape')][-1]
             }
     
+    if isinstance(sliceObj,(np.int32,int)):
+        sliceObj = int(sliceObj)
+        sliceObj = slice(sliceObj)
+        
+    
     if (sliceObj.stop is not None) and (sliceObj.stop > dims[dim]):
         raise ValueError('The specified stop dimension "{}" in larger than the dimensions of the \
                          origional image'.format(dim))
@@ -366,7 +377,7 @@ def cache(location=None,mem_size=1e9,disk_size=1e9):
             
             fname = '{}|{}|{}|{}'.format(func.__name__,
                                       ','.join(args[0].filePathComplete),
-                                      ','.join(map(str,args[1::])), #args[2::] because 0 is filepath and 1 is a h5py object that will chance with each round
+                                      ','.join(map(str,args[1::])), #args[2::] because 0 is filepath and 1 is a h5py object that will change with each round
                                       ','.join(map(lambda it: '{}:{}'.format(it[0],it[1]),kwargs.items()))
                                       )
                 
@@ -442,6 +453,20 @@ def cache(location=None,mem_size=1e9,disk_size=1e9):
     return actual_decorator
 
 
+
+def getSliceByChunk(self,r,t,c,z,y,x):
+    # incomingSlices = (r,t,c,z,y,x)
+    tSize = list(range(self.TimePoints)[t])
+    cSize = list(range(self.Channels)[c])
+    zSize = len(range(self.metaData[(r,0,0,'shape')][-3])[z])
+    ySize = len(range(self.metaData[(r,0,0,'shape')][-2])[y])
+    xSize = len(range(self.metaData[(r,0,0,'shape')][-1])[x])
+    
+    # Casting zeros to specific dtype signifigantly speeds up data retrieval
+    outputArray = np.zeros((len(tSize),len(cSize),zSize,ySize,xSize), dtype=self.dtype)
+    
+def whichChunk(self,sliceObj) :
+    ...
 
 def getSlice(self,r,t,c,z,y,x):
     
