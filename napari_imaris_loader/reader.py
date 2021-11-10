@@ -60,9 +60,9 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
     imsClass = ims(path)
    
     if imsClass.dtype==np.dtype('uint16'):
-        contrastLimits = [0,65534]
+        contrastLimits = [0, 65535]
     elif imsClass.dtype==np.dtype('uint8'):
-        contrastLimits = [0,254]
+        contrastLimits = [0, 255]
     elif imsClass.dtype==np.dtype('float'):
         contrastLimits = [0,1]
     
@@ -143,9 +143,9 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
         for idx,_ in enumerate(data):
             data[idx] = data[idx][0,0,0,0]
             meta['channel_axis'] = None
-    
-    # Remove single color dims, this may not be necessary 
-    if len(data) >= 4 and data[0].shape[-4] == 1:
+
+    # Remove single color dims, this may not be necessary
+    if len(data) >= 1 and data[0].ndim >= 4 and data[0].shape[-4] == 1:
         for idx,_ in enumerate(data):
             data[idx] = data[idx][...,0,:,:,:]
         meta['channel_axis'] = None
