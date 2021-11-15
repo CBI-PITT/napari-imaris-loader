@@ -22,11 +22,9 @@ with options to maintain this cache persistantly accross sessions.
 """
 
 import os
-from .ims import ims
 import numpy as np
 import dask.array as da
-# from dask import delayed
-# from dask.cache import Cache
+from imaris_ims_file_reader import ims
 
 from napari_plugin_engine import napari_hook_implementation
 
