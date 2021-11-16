@@ -22,11 +22,9 @@ with options to maintain this cache persistantly accross sessions.
 """
 
 import os
-from .ims import ims
 import numpy as np
 import dask.array as da
-# from dask import delayed
-# from dask.cache import Cache
+from imaris_ims_file_reader import ims
 
 from napari_plugin_engine import napari_hook_implementation
 
@@ -56,6 +54,8 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
     
     # path = r"Z:\testData\bitplaneConverter.ims"  ## Dataset for testing
     #print('I AM IN THE READER')
+    
+    # path = r"Z:\toTest\bil\download.brainimagelibrary.org\2b\da\2bdaf9e66a246844\mouseID_405429-182725\CH1_0.35_100um\ch1_0.35_100um.ims"
     
     imsClass = ims(path)
    
