@@ -69,6 +69,12 @@ def resolution_change(
     ## Collect viewer state info about each layer with the same names extracted 
     ## from the ims file.  Add these parameters to the metadata extracted from file.
     ## Then delete the old layers
+    
+    ## Force viewer into 2D mode to avoid interpolation and
+    ## axes don't match errors.  Not sure why these are caused
+    if viewer.dims.ndisplay == 3:
+        viewer.dims.ndisplay = 2
+        
     for num,idx in enumerate(channelNames):
         
         tmp = {
@@ -77,12 +83,17 @@ def resolution_change(
             'colormap':viewer.layers[str(idx)].colormap,
             'blending':viewer.layers[str(idx)].blending,
             'interpolation':viewer.layers[str(idx)].interpolation,
-            'visible':viewer.layers[str(idx)].visible
+            'visible':viewer.layers[str(idx)].visible,
+            'rendering':viewer.layers[str(idx)].rendering
+            
+            # 'contrast_limits_range':viewer.layers[str(idx)].contrast_limits
+            
             }
+        
         tupleOut[num][1].update(tmp)
         
         del(viewer.layers[str(idx)])
-        
+
     ## Return the tuple data that will be loaded into the viewer
     return tupleOut
 
