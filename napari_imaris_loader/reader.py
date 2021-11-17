@@ -24,7 +24,7 @@ with options to maintain this cache persistantly accross sessions.
 import os
 import numpy as np
 import dask.array as da
-from imaris_ims_file_reader.ims import ims
+from imaris_ims_file_reader import ims
 
 from napari_plugin_engine import napari_hook_implementation
 
@@ -60,7 +60,7 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
 # path = r"Z:\toTest\bil\download.brainimagelibrary.org\2b\da\2bdaf9e66a246844\mouseID_405429-182725\CH1_0.35_100um\ch1_0.35_100um.ims"
 # path = r"Z:\testData\2D\1time_1color_composite_z500_c488.ims"
     
-    imsClass = ims(path)
+    imsClass = ims.ims(path)
        
     if imsClass.dtype==np.dtype('uint16'):
         contrastLimits = [0, 65535]
@@ -90,7 +90,7 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
     data = []
     for rr in range(imsClass.ResolutionLevels):
         print('Loading resolution level {}'.format(rr))
-        data.append(ims(path,ResolutionLevelLock=rr,cache_location=imsClass.cache_location))
+        data.append(ims.ims(path,ResolutionLevelLock=rr,cache_location=imsClass.cache_location))
         
     
     chunks = True
