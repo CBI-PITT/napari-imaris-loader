@@ -46,26 +46,29 @@ indices[d] = slice(
 start/stop values of the slice must be coerced to int otherwise an error
 is thrown when switching from 3D to 2D view
 
+###  NOTE: This may no longer be a problem
+
 """
     
 
 
 def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
     
-    # path = r"Z:\testData\bitplaneConverter.ims"  ## Dataset for testing
-    #print('I AM IN THE READER')
-    
-    # path = r"Z:\toTest\bil\download.brainimagelibrary.org\2b\da\2bdaf9e66a246844\mouseID_405429-182725\CH1_0.35_100um\ch1_0.35_100um.ims"
+# path = r"Z:\testData\bitplaneConverter.ims"  ## Dataset for testing
+#print('I AM IN THE READER')
+
+# path = r"Z:\toTest\bil\download.brainimagelibrary.org\2b\da\2bdaf9e66a246844\mouseID_405429-182725\CH1_0.35_100um\ch1_0.35_100um.ims"
+# path = r"Z:\testData\2D\1time_1color_composite_z500_c488.ims"
     
     imsClass = ims(path)
-   
+       
     if imsClass.dtype==np.dtype('uint16'):
         contrastLimits = [0, 65535]
     elif imsClass.dtype==np.dtype('uint8'):
         contrastLimits = [0, 255]
     elif imsClass.dtype==np.dtype('float'):
         contrastLimits = [0,1]
-    
+
     
     ## Enable async loading of tiles
     os.environ["NAPARI_ASYNC"] = "1"
@@ -75,14 +78,6 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
     
     # cache = Cache(10e9)  # Leverage two gigabytes of memory
     # cache.register()    # Turn cache on globally
-    
-    ## Extract Voxel Spacing
-    scale = imsClass.resolution
-    # scale = [x/scale[-1] for x in scale]
-    scale = [tuple(scale)]*imsClass.Channels
-    
-    
-    print(scale)
     
     ## Display current Channel Names
     channelNames = []
@@ -105,17 +100,16 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
                                   fancy=False
                                   )
     
-    
+    print(data)
     # Base metadata that apply to all senarios
     meta = {
-        "scale": scale if len(scale) > 1 else scale[0],
         "contrast_limits": contrastLimits,
         "name": channelNames,
         "metadata": {'fileName':imsClass.filePathComplete,
                      'resolutionLevels':imsClass.ResolutionLevels
                      }
         }
-    
+
     # Reslice to remove dangling single dimensions, this may not be necessary anymore
     inwardSlice = 0
     for ii in range(len(imsClass.shape)):
@@ -171,12 +165,18 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
         raise ValueError('Selected resolution level is too high:  Options are between 0 and {}'.format(imsClass.ResolutionLevels-1))
     
     data = data if resLevel=='max' else data[:resLevel+1]
+    print(data)
     
     # Set multiscale based on whether multiple resolutions are present
     meta["multiscale"] = True if len(data) > 1 else False
     
-    # if isinstance(channelNames,str):
-    #     colorsIndependant = True
+    ## Extract Voxel Spacing
+    scale = imsClass.resolution
+    scale = scale[-2::] if len(data[0].shape) == 2 else scale #Reduces scale to 2dim when a single color 2D dataset
+    scale = [tuple(scale)]*imsClass.Channels
+    
+    meta["scale"] = scale if len(scale) > 1 else scale[0]
+    
 
     if colorsIndependant and 'channel_axis' in meta and meta['channel_axis'] is not None:
         channelAxis = meta['channel_axis']
