@@ -24,7 +24,7 @@ with options to maintain this cache persistantly accross sessions.
 import os
 import numpy as np
 import dask.array as da
-from imaris_ims_file_reader import ims
+from imaris_ims_file_reader.ims import ims
 
 from napari_plugin_engine import napari_hook_implementation
 
