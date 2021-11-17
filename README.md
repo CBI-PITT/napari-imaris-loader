@@ -25,7 +25,7 @@ A plugin is provided to dynamically reload the data after selecting the lowest r
 * Chunks are implemented by dask and matched to the chunk sizes stored in each dataset.  (Napari appears to only ask for 2D chunks - unclear how helpful this feature is currently)
 * Successfully handles multi-terabyte multi-timepoint multi-channel datasets.
 * Tested with all sample files provided by Bitplane.
-* Higher 3D rendering quality is enabled by a widget that reloads data after specifying the lowest resolution level (higher number = lower resolution) to be included in the multiscale series.  Must be done while in 2D rendering mode to avoid crash.
+* Higher 3D rendering quality is enabled by a widget that reloads data after specifying the lowest resolution level (higher number = lower resolution) to be included in the multiscale series.
 
 ### Known Issues / limitations
 
@@ -55,6 +55,16 @@ https://napari.org/docs/plugins/index.html
 You can install `napari-imaris-loader` via [pip]:
 
     pip install napari-imaris-loader
+
+## Change Log:
+
+##### <u>v0.1.2:</u>
+
+**Fixed:** Issue where .ims files containing a single color 2D image would not open.
+
+**Fixed:** Issue where using the widget to change resolutions while in 3D rendering would cause a crash.  Now the viewer is automatically forced into 2D rendering mode when the widget is used.
+
+**Dependency change:** The loader is now dependent in a separate package for loading IMS files.  https://pypi.org/project/imaris-ims-file-reader/
 
 ## Contributing
 
