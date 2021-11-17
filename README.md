@@ -36,9 +36,6 @@ A plugin is provided to dynamically reload the data after selecting the lowest r
 * Contrast_Limits are currently determined by dtype and not the actual data.
   * float: [0,1], uint8: [0,254], uint16: [0,65534]
   * Future implementations may use the HistogramMax parameter to determine this.
-* 3D rendering works, but it is suggested to turn on 1 channel at a time starting from the highest channel to avoid some OpenGL errors and misalignment errors.
-  * For example: Turn on only Channel 1, activate 3D rendering, then turn on Channel 0.
-  * 3D rendering seems to be limited more by computer RAM rather than vRAM.
 
 
 ----------------------------------
