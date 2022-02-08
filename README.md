@@ -72,6 +72,10 @@ Documentation
 
 **v0.1.4:**
 
+Add napari to install requirements for plugin compatibility
+
+**v0.1.5:**
+
 Changes to napari:
 
 - now requires napari[all] upon install.
