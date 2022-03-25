@@ -66,7 +66,7 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
         contrastLimits = [0, 65535]
     elif imsClass.dtype==np.dtype('uint8'):
         contrastLimits = [0, 255]
-    elif imsClass.dtype==np.dtype('float'):
+    else: 
         contrastLimits = [0,1]
 
     
