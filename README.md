@@ -81,6 +81,10 @@ Changes to napari:
 - now requires napari[all] upon install.
 - requires >=v0.1.5 of imaris-ims-file-reader
 
+**v0.1.6:**
+
+- Fix issue #7 where contrastLimits possibly unbound in reader
+
 ## Contributing
 
 Contributions are very welcome. Tests can be run with [tox], please ensure

@@ -66,6 +66,25 @@ You can install `napari-imaris-loader` via [pip]:
 
 **Dependency change:** The loader is now dependent in a separate package for loading IMS files.  https://pypi.org/project/imaris-ims-file-reader/
 
+**v0.1.3:**
+
+Documentation
+
+**v0.1.4:**
+
+Add napari to install requirements for plugin compatibility
+
+**v0.1.5:**
+
+Changes to napari:
+
+- now requires napari[all] upon install.
+- requires >=v0.1.5 of imaris-ims-file-reader
+
+**v0.1.6:**
+
+- Fix issue #7 where contrastLimits possibly unbound in reader
+
 ## Contributing
 
 Contributions are very welcome. Tests can be run with [tox], please ensure
