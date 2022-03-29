@@ -85,6 +85,10 @@ Changes to napari:
 
 - Fix issue #7 where contrastLimits possibly unbound in reader
 
+**v0.1.7:**
+
+- For squeeze_output=False when opening .ims file for Napari compatibility
+
 ## Contributing
 
 Contributions are very welcome. Tests can be run with [tox], please ensure
