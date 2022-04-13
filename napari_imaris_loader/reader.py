@@ -60,14 +60,25 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
 # path = r"Z:\toTest\bil\download.brainimagelibrary.org\2b\da\2bdaf9e66a246844\mouseID_405429-182725\CH1_0.35_100um\ch1_0.35_100um.ims"
 # path = r"Z:\testData\2D\1time_1color_composite_z500_c488.ims"
     
-    imsClass = ims(path,squeeze_output=False)
-       
-    if imsClass.dtype==np.dtype('uint16'):
-        contrastLimits = [0, 65535]
-    elif imsClass.dtype==np.dtype('uint8'):
-        contrastLimits = [0, 255]
-    else: 
-        contrastLimits = [0,1]
+    squeeze_output = True
+    imsClass = ims(path,squeeze_output=squeeze_output)
+    
+    try:
+        # Extract minimum resolution level and calculate contrast limits
+        minResolutionLevel = imsClass[imsClass.ResolutionLevels-1,:,:,:,:,:]
+        minContrast = minResolutionLevel[minResolutionLevel>0].min()
+        maxContrast = minResolutionLevel.max()
+        contrastLimits = [minContrast,maxContrast]
+    
+    except Exception:
+        if imsClass.dtype==np.dtype('uint16'):
+            contrastLimits = [0, 65534]
+        elif imsClass.dtype==np.dtype('uint8'):
+            contrastLimits = [0, 254]
+        else: 
+            contrastLimits = [0,1]
+    
+    
 
     
     ## Enable async loading of tiles
@@ -90,9 +101,11 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
     data = []
     for rr in range(imsClass.ResolutionLevels):
         print('Loading resolution level {}'.format(rr))
-        data.append(ims(path,ResolutionLevelLock=rr,cache_location=imsClass.cache_location,squeeze_output=False))
+        data.append(ims(path,ResolutionLevelLock=rr,cache_location=imsClass.cache_location,squeeze_output=squeeze_output))
         
-    
+    # for ii in data:
+    #     print(ii.ResolutionLevelLock)
+        
     chunks = True
     for idx,_ in enumerate(data):
         data[idx] = da.from_array(data[idx],
