@@ -33,9 +33,6 @@ A plugin is provided to dynamically reload the data after selecting the lowest r
 * Napari sometimes throws errors indicating that it expected a 3D or 5D array but receives the other.
   * This sometimes *but relatively rarely* causes napari to crash
   * Would like to enable Asynchronous Tiling of Images, but this results in more instability and causes crashes.
-* Contrast_Limits are currently determined by dtype and not the actual data.
-  * float: [0,1], uint8: [0,254], uint16: [0,65534]
-  * Future implementations may use the HistogramMax parameter to determine this.
 
 
 ----------------------------------
@@ -88,6 +85,11 @@ Changes to napari:
 **v0.1.7:**
 
 - For squeeze_output=False when opening .ims file for Napari compatibility
+
+**v0.1.8:**
+
+- Add automatic determination of contrast_limits
+- Fix bug in squeeze_output
 
 ## Contributing
 
