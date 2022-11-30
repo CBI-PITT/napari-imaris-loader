@@ -92,12 +92,12 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
     
     ## Display current Channel Names
     channelNames = []
+
     for cc in range(imsClass.Channels):
-        channelNames.append('Channel {}'.format(cc))
+        channelNames.append(imsClass.read_attribute(f'/DataSetInfo/Channel {cc}', 'Name'))
     if len(channelNames) == 1:
-        channelNames = channelNames[0]
-        
-    
+        channelNames = imsClass.read_attribute(f'/DataSetInfo/Channel 0', 'Name')
+
     data = []
     for rr in range(imsClass.ResolutionLevels):
         print('Loading resolution level {}'.format(rr))
