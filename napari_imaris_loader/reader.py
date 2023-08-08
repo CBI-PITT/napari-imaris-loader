@@ -99,15 +99,20 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
         # Names
         channelNames.append(imsClass.read_attribute(f'/DataSetInfo/Channel {cc}', 'Name'))
         # Colors
-        color = [float(col) for col in imsClass.read_attribute(f'DataSetInfo/Channel {cc}', 'Color').split(" ")]
-        colmap = vispy.color.Colormap([[0.0, 0.0, 0.0], color])
+        try:
+            color = [float(col) for col in imsClass.read_attribute(f'DataSetInfo/Channel {cc}', 'Color').split(" ")]
+            colmap = vispy.color.Colormap([[0.0, 0.0, 0.0], color])
+        except KeyError:
+            colmap = None
         colormaps.append(colmap)
 
         # Opacities
-        opacity = float(imsClass.read_attribute(f'/DataSetInfo/Channel {cc}', 'ColorOpacity'))
+        try:
+            opacity = float(imsClass.read_attribute(f'/DataSetInfo/Channel {cc}', 'ColorOpacity'))
+        except KeyError:
+            opacity = None
         opacities.append(opacity)
 
-        print(f"Extracted color: {color}")
 
     if len(channelNames) == 1:
         channelNames = imsClass.read_attribute(f'/DataSetInfo/Channel 0', 'Name')
