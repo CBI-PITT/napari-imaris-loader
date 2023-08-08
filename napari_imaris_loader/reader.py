@@ -111,6 +111,8 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
 
     if len(channelNames) == 1:
         channelNames = imsClass.read_attribute(f'/DataSetInfo/Channel 0', 'Name')
+        colormaps = colormaps[0]
+        opacities = opacities[0]
 
     data = []
     for rr in range(imsClass.ResolutionLevels):
