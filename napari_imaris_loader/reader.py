@@ -25,7 +25,7 @@ import os
 import numpy as np
 import dask.array as da
 from imaris_ims_file_reader.ims import ims
-
+import vispy.color
 from napari_plugin_engine import napari_hook_implementation
 
 
@@ -92,12 +92,33 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
     
     ## Display current Channel Names
     channelNames = []
+    colormaps = []
+    opacities = []
+
     for cc in range(imsClass.Channels):
-        channelNames.append('Channel {}'.format(cc))
+        # Names
+        channelNames.append(imsClass.read_attribute(f'/DataSetInfo/Channel {cc}', 'Name'))
+        # Colors
+        try:
+            color = [float(col) for col in imsClass.read_attribute(f'DataSetInfo/Channel {cc}', 'Color').split(" ")]
+            colmap = vispy.color.Colormap([[0.0, 0.0, 0.0], color])
+        except KeyError:
+            colmap = None
+        colormaps.append(colmap)
+
+        # Opacities
+        try:
+            opacity = float(imsClass.read_attribute(f'/DataSetInfo/Channel {cc}', 'ColorOpacity'))
+        except KeyError:
+            opacity = None
+        opacities.append(opacity)
+
+
     if len(channelNames) == 1:
-        channelNames = channelNames[0]
-        
-    
+        channelNames = imsClass.read_attribute(f'/DataSetInfo/Channel 0', 'Name')
+        colormaps = colormaps[0]
+        opacities = opacities[0]
+
     data = []
     for rr in range(imsClass.ResolutionLevels):
         print('Loading resolution level {}'.format(rr))
@@ -118,6 +139,7 @@ def ims_reader(path,resLevel='max', colorsIndependant=False, preCache=False):
     meta = {
         "contrast_limits": contrastLimits,
         "name": channelNames,
+        "colormap": colormaps,
         "metadata": {'fileName':imsClass.filePathComplete,
                      'resolutionLevels':imsClass.ResolutionLevels
                      }
